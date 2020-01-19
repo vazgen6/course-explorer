@@ -3,14 +3,14 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const colors = require("colors");
 const connectDB = require("./config/db");
-
+const errorHandler = require('./middlewares/error');
 dotenv.config({ path: "./config/config.env" });
 
 // connect to DB
 connectDB();
 
 const app = express();
-
+app.use(express.json());
 if (process.env.NODE_ENV === "dev") {
   app.use(morgan("dev"));
 }
@@ -26,6 +26,7 @@ const server = app.listen(
 );
 
 app.use("/api/v1/courses", courses);
+app.use(errorHandler);
 
 process.on("unhandledRejection", (err, promise) => {
   console.error(`UnhandledRejection ${err.message}`.red);

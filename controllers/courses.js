@@ -1,10 +1,19 @@
+const Courses = require("../models/Course");
+const ErrorResponse = require("../utils/error-response")
 /**
  * @description Get all courses
  * @route   GET /api/v1/courses
  * @access  Public
  */
-exports.getCourses = (req, res, next) => {
-  res.status(200).json({ success: true, msg: "Get Courses" });
+exports.getCourses = async (req, res, next) => {
+  try {
+    const courses = await Courses.find();
+    res
+      .status(200)
+      .json({ success: true, data: courses, count: courses.length });
+  } catch (e) {
+    next(e);
+  }
 };
 
 /**
@@ -12,8 +21,16 @@ exports.getCourses = (req, res, next) => {
  * @route   GET /api/v1/courses/:id
  * @access  Public
  */
-exports.getCourse = (req, res, next) => {
-  res.send({ success: true, msg: `get course of id ${req.params.id}` });
+exports.getCourse = async (req, res, next) => {
+  try {
+    const course = await Courses.findById(req.params.id);
+    if (!course) {
+      return next(new ErrorResponse(`Course Not found with id of ${req.params.id}`, 404));
+    }
+    res.status(200).json({ success: true, data: course });
+  } catch (err) {
+    next(err);
+  }
 };
 
 /**
@@ -21,8 +38,13 @@ exports.getCourse = (req, res, next) => {
  * @route   POST /api/v1/courses/:id
  * @access  Private
  */
-exports.createCourse = (req, res, next) => {
-  res.send({ success: true, msg: `create course` });
+exports.createCourse = async (req, res, next) => {
+  try {
+    const course = await Courses.create(req.body);
+    res.status(201).send({ success: true, data: course });
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
@@ -30,8 +52,21 @@ exports.createCourse = (req, res, next) => {
  * @route   PUT /api/v1/courses/:id
  * @access  Private
  */
-exports.updateCourse = (req, res, next) => {
-  res.send({ success: true, msg: `update course of id ${req.params.id}` });
+exports.updateCourse = async (req, res, next) => {
+  try {
+    const course = await Courses.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!course) {
+      return next(new ErrorResponse(`Course Not found with id of ${req.params.id}`, 404));
+    }
+
+    res.status(200).json({ success: true, data: course });
+  } catch (e) {
+    next(e);
+  }
 };
 
 /**
@@ -39,6 +74,14 @@ exports.updateCourse = (req, res, next) => {
  * @route   DELETE /api/v1/courses/:id
  * @access  Private
  */
-exports.deleteCourse = (req, res, next) => {
-  res.send({ success: true, msg: `delete course of id ${req.params.id}` });
+exports.deleteCourse = async (req, res, next) => {
+  try {
+    const course = await Courses.findByIdAndDelete(req.params.id);
+    if (!course) {
+      return next(new ErrorResponse(`Course Not found with id of ${req.params.id}`, 404));
+    }
+    res.status(200).json({ success: true, data: {} });
+  } catch (error) {
+    next(error);
+  }
 };

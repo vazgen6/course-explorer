@@ -39,11 +39,11 @@ const CourseSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ["Point"],
-      require: true
+      require: false
     },
     coordinates: {
       type: [Number],
-      required: true,
+      required: false,
       index: "2dsphere"
     },
     formattedAddress: String,
