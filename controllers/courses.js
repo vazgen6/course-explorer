@@ -8,7 +8,32 @@ const asyncHandler = require('../middlewares/async');
  * @access  Public
  */
 exports.getCourses = asyncHandler(async (req, res, next) => {
-  const courses = await Courses.find();
+  const reqQuery = { ...req.query };
+
+  // exclude fields
+
+  const removeFields = ['select', 'sort'];
+  removeFields.forEach(f => delete reqQuery[f]);
+
+  let queryStr = JSON.stringify(reqQuery);
+
+  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+
+  const query = Courses.find(JSON.parse(queryStr));
+
+  if (req.query.select) {
+    const fields = req.query.select.replace(',', ' ');
+    query.select(fields);
+  }
+
+  if (req.query.sort) {
+    const sortBy = req.query.sort.replace(',', ' ');
+    query.sort(sortBy);
+  } else {
+    query.sort('-createdAt');
+  }
+
+  const courses = await Courses.find(query);
   res
     .status(200)
     .json({ success: true, data: courses, count: courses.length });
